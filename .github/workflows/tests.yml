@@ -1,0 +1,25 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    env:
+      OMP_NUM_THREADS: "2"
+      MPLBACKEND: Agg
+      OUTDATED_IGNORE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Python 3.12 et dépendances épinglées (torch CPU)
+        run: |
+          uv python install 3.12
+          uv sync --frozen --extra cpu
+      - name: Tests sur petits graphes synthétiques
+        run: uv run --frozen --extra cpu pytest

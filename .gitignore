@@ -1,0 +1,15 @@
+# Environnement
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Données OGB (téléchargées par `make data`) et sorties lourdes
+data/
+checkpoints/
+*.pt
+*.pth
+*.zip
+
+# Journaux locaux
+*.log

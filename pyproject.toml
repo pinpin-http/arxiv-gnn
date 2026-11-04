@@ -1,0 +1,57 @@
+[project]
+name = "arxiv-gnn"
+version = "0.1.0"
+description = "Ce que les citations apportent au texte seul : MLP, GCN, GraphSAGE, propagation d'étiquettes et C&S sur ogbn-arxiv"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "torch_geometric==2.8.1",
+    "ogb==1.3.6",
+    "numpy==2.5.4",
+    "pandas==3.1.0",
+    "scikit-learn==1.9.1",
+    "matplotlib==3.11.2",
+]
+
+[project.optional-dependencies]
+cpu = ["torch==2.11.0"]
+cu128 = ["torch==2.11.0"]
+
+[tool.uv]
+conflicts = [[{ extra = "cpu" }, { extra = "cu128" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu128", extra = "cu128" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/arxiv_gnn"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore:.*pkg_resources.*:UserWarning",
+    "ignore:.*[Ss]parse.*:UserWarning",
+]
+
+[dependency-groups]
+dev = ["pytest==9.2.0"]
