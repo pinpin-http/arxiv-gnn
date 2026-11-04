@@ -56,7 +56,7 @@ def cmd_train(args) -> None:
     from .config import SEEDS
 
     data = _load(args.device, args.model)
-    seeds = tuple(range(args.seeds)) if args.seeds else SEEDS
+    seeds = tuple(args.seed) if args.seed else (tuple(range(args.seeds)) if args.seeds else SEEDS)
     if T.best_config(args.model) is None and not args.no_search:
         print(f"Pas de recherche enregistrée pour {args.model} : on la lance d'abord.", flush=True)
         _search(args.model, data, args.epochs)
@@ -113,6 +113,8 @@ def main(argv=None) -> None:
         sp.add_argument("--epochs", type=int, default=None, help="surcharge du nombre d'époques (essais rapides)")
         if name == "train":
             sp.add_argument("--seeds", type=int, default=None, help="nombre de graines (défaut : 3)")
+            sp.add_argument("--seed", type=int, action="append",
+                            help="graine précise, répétable (pour répartir les graines entre deux processus)")
             sp.add_argument("--no-search", action="store_true")
         sp.set_defaults(fn=fn)
 
