@@ -1,0 +1,217 @@
+{
+ "device": "cpu",
+ "threads": 2,
+ "torch": "2.11.0+cpu",
+ "cpu_quota": null,
+ "cpu": "AMD Ryzen 5 5600G with Radeon Graphics",
+ "logical_cpus": 12,
+ "started": "2026-11-07 19:25:53",
+ "finished": "2026-11-07 19:29:08",
+ "rows": [
+  {
+   "model": "mlp",
+   "threads": 2,
+   "rss_after_load_mb": 936.859375,
+   "config": {
+    "hidden": 256,
+    "num_layers": 3,
+    "dropout": 0.5,
+    "lr": 0.01,
+    "weight_decay": 0.0,
+    "epochs": 300,
+    "heads": 4,
+    "checkpoint": false
+   },
+   "params": 110120,
+   "epoch_s": 2.015949995000028,
+   "epoch_s_all": [
+    2.0229338669998924,
+    2.015949995000028,
+    2.0099742300001253,
+    2.0059520750000956,
+    2.024084156999834
+   ],
+   "infer_s": 0.3322572095000851,
+   "peak_rss_mb": 2105.6875,
+   "status": "ok",
+   "wall_s": 17.114341735839844,
+   "attempt": 1,
+   "loadavg_before": [
+    1.16,
+    2.15,
+    2.58
+   ],
+   "loadavg_after": [
+    1.27,
+    2.13,
+    2.57
+   ]
+  },
+  {
+   "model": "gcn",
+   "threads": 2,
+   "rss_after_load_mb": 936.16015625,
+   "config": {
+    "hidden": 256,
+    "num_layers": 3,
+    "dropout": 0.5,
+    "lr": 0.01,
+    "weight_decay": 0.0,
+    "epochs": 300,
+    "heads": 4,
+    "checkpoint": false
+   },
+   "params": 110120,
+   "epoch_s": 3.100004388999878,
+   "epoch_s_all": [
+    3.100004388999878,
+    3.099856789000114,
+    3.0817842530000235,
+    3.1103040809998674,
+    3.100696122999807
+   ],
+   "infer_s": 0.900818729999969,
+   "peak_rss_mb": 2191.71484375,
+   "status": "ok",
+   "wall_s": 24.692201375961304,
+   "attempt": 1,
+   "loadavg_before": [
+    1.27,
+    2.13,
+    2.57
+   ],
+   "loadavg_after": [
+    1.59,
+    2.13,
+    2.56
+   ]
+  },
+  {
+   "model": "sage",
+   "threads": 2,
+   "rss_after_load_mb": 936.484375,
+   "config": {
+    "hidden": 256,
+    "num_layers": 3,
+    "dropout": 0.5,
+    "lr": 0.01,
+    "weight_decay": 0.0,
+    "epochs": 300,
+    "heads": 4,
+    "checkpoint": false
+   },
+   "params": 218664,
+   "epoch_s": 4.020111586999974,
+   "epoch_s_all": [
+    4.030637898999885,
+    4.0317873909998525,
+    3.996484148000036,
+    3.9774246110000604,
+    4.020111586999974
+   ],
+   "infer_s": 1.3409423924999828,
+   "peak_rss_mb": 2899.6640625,
+   "status": "ok",
+   "wall_s": 31.03486967086792,
+   "attempt": 1,
+   "loadavg_before": [
+    1.59,
+    2.13,
+    2.56
+   ],
+   "loadavg_after": [
+    1.62,
+    2.09,
+    2.53
+   ]
+  },
+  {
+   "model": "gat",
+   "threads": 2,
+   "rss_after_load_mb": 936.08984375,
+   "config": {
+    "hidden": 256,
+    "num_layers": 3,
+    "dropout": 0.5,
+    "lr": 0.01,
+    "weight_decay": 0.0,
+    "epochs": 300,
+    "heads": 4,
+    "checkpoint": false
+   },
+   "params": 142184,
+   "epoch_s": 16.510587719999876,
+   "epoch_s_all": [
+    16.510587719999876,
+    17.19762497800002,
+    15.596947737999926
+   ],
+   "infer_s": 4.466152105499987,
+   "peak_rss_mb": 3261.9765625,
+   "status": "ok",
+   "wall_s": 77.14837265014648,
+   "attempt": 1,
+   "loadavg_before": [
+    1.62,
+    2.09,
+    2.53
+   ],
+   "loadavg_after": [
+    3.09,
+    2.45,
+    2.62
+   ]
+  },
+  {
+   "model": "lp",
+   "threads": 2,
+   "rss_after_load_mb": 936.1953125,
+   "config": {
+    "num_layers": 50,
+    "alpha": 0.75
+   },
+   "run_s": 2.10904093299996,
+   "peak_rss_mb": 936.1953125,
+   "status": "ok",
+   "wall_s": 16.94158959388733,
+   "attempt": 1,
+   "loadavg_before": [
+    3.09,
+    2.45,
+    2.62
+   ],
+   "loadavg_after": [
+    2.85,
+    2.43,
+    2.61
+   ]
+  },
+  {
+   "model": "cs",
+   "threads": 2,
+   "rss_after_load_mb": 936.62890625,
+   "config": {
+    "correct_alpha": 0.9,
+    "smooth_alpha": 0.6,
+    "num_layers": 50,
+    "autoscale": true,
+    "scale": 1.0
+   },
+   "run_s": 4.012019794000025,
+   "peak_rss_mb": 936.62890625,
+   "status": "ok",
+   "wall_s": 28.69401264190674,
+   "attempt": 1,
+   "loadavg_before": [
+    2.85,
+    2.43,
+    2.61
+   ],
+   "loadavg_after": [
+    3.16,
+    2.54,
+    2.64
+   ]
+  }
+ ]
+}

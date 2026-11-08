@@ -11,15 +11,16 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 os.environ.setdefault("OUTDATED_IGNORE", "1")  # ogb ne vérifie pas sa version en ligne
 
 
-def _load(device: str, model: str | None = None):
+def _load(device: str, model: str | None = None, precision: str = "auto"):
     from .data import load_arxiv
     from .train import get_device, prepare, setup_threads
 
     setup_threads()
     dev = get_device(device)
     data = load_arxiv()
-    data = prepare(data, model, dev) if model else data.to(dev)
-    print(f"ogbn-arxiv sur {dev} : {data.num_nodes} nœuds, {data.graph.num_edges} arêtes orientées "
+    amp = None if precision == "auto" else precision == "fp16"
+    data = prepare(data, model, dev, amp=amp) if model else data.to(dev)
+    print(f"ogbn-arxiv sur {dev} ({data.x.dtype}) : {data.num_nodes} nœuds, {data.graph.num_edges} arêtes orientées "
           f"après symétrisation, {data.num_classes} classes, "
           + ", ".join(f"{k}={v.numel()}" for k, v in data.split.items()), flush=True)
     return data
@@ -48,14 +49,14 @@ def _search(model: str, data, epochs=None) -> None:
 
 
 def cmd_search(args) -> None:
-    _search(args.model, _load(args.device, args.model), args.epochs)
+    _search(args.model, _load(args.device, args.model, args.precision), args.epochs)
 
 
 def cmd_train(args) -> None:
     from . import train as T
     from .config import SEEDS
 
-    data = _load(args.device, args.model)
+    data = _load(args.device, args.model, args.precision)
     seeds = tuple(args.seed) if args.seed else (tuple(range(args.seeds)) if args.seeds else SEEDS)
     if T.best_config(args.model) is None and not args.no_search:
         print(f"Pas de recherche enregistrée pour {args.model} : on la lance d'abord.", flush=True)
@@ -109,7 +110,9 @@ def main(argv=None) -> None:
                                ("train", cmd_train, "campagne finale (graines 0, 1, 2 par défaut)")):
         sp = sub.add_parser(name, help=helptext)
         sp.add_argument("--model", required=True, choices=ALL_MODELS)
-        sp.add_argument("--device", default="cpu", help="cpu (défaut, résultats publiés) ou cuda")
+        sp.add_argument("--device", default="cpu", help="cpu (défaut) ou cuda (NVIDIA ou AMD via ROCm)")
+        sp.add_argument("--precision", default="auto", choices=("auto", "fp32", "fp16"),
+                        help="auto : fp16 (précision mixte) sur GPU, fp32 sur CPU")
         sp.add_argument("--epochs", type=int, default=None, help="surcharge du nombre d'époques (essais rapides)")
         if name == "train":
             sp.add_argument("--seeds", type=int, default=None, help="nombre de graines (défaut : 3)")

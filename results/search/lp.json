@@ -1,0 +1,51 @@
+{
+ "model": "lp",
+ "selection": "valid_acc",
+ "trials": [
+  {
+   "trial": 0,
+   "config": {
+    "num_layers": 50,
+    "alpha": 0.5
+   },
+   "valid_acc": 0.6976744186046512,
+   "seconds": 5.102085815999999
+  },
+  {
+   "trial": 1,
+   "config": {
+    "num_layers": 50,
+    "alpha": 0.75
+   },
+   "valid_acc": 0.6986476056243498,
+   "seconds": 5.626663390000203
+  },
+  {
+   "trial": 2,
+   "config": {
+    "num_layers": 50,
+    "alpha": 0.9
+   },
+   "valid_acc": 0.6823047753280311,
+   "seconds": 6.250437938999994
+  },
+  {
+   "trial": 3,
+   "config": {
+    "num_layers": 50,
+    "alpha": 0.99
+   },
+   "valid_acc": 0.5151515151515151,
+   "seconds": 5.774208845000203
+  }
+ ],
+ "best": {
+  "trial": 1,
+  "config": {
+   "num_layers": 50,
+   "alpha": 0.75
+  },
+  "valid_acc": 0.6986476056243498,
+  "seconds": 5.626663390000203
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "model": "cs",
+ "base": "mlp",
+ "seed": 0,
+ "selection": "valid_acc",
+ "trials": [
+  {
+   "trial": 0,
+   "config": {
+    "correct_alpha": 0.5,
+    "smooth_alpha": 0.6,
+    "num_layers": 50,
+    "autoscale": true,
+    "scale": 1.0
+   },
+   "valid_acc": 0.7187153931339978,
+   "seconds": 14.666604072000155
+  },
+  {
+   "trial": 1,
+   "config": {
+    "correct_alpha": 0.5,
+    "smooth_alpha": 0.9,
+    "num_layers": 50,
+    "autoscale": true,
+    "scale": 1.0
+   },
+   "valid_acc": 0.7205610926541159,
+   "seconds": 14.52471648700066
+  },
+  {
+   "trial": 2,
+   "config": {
+    "correct_alpha": 0.9,
+    "smooth_alpha": 0.6,
+    "num_layers": 50,
+    "autoscale": true,
+    "scale": 1.0
+   },
+   "valid_acc": 0.7299573811201718,
+   "seconds": 15.172285403000387
+  },
+  {
+   "trial": 3,
+   "config": {
+    "correct_alpha": 0.9,
+    "smooth_alpha": 0.9,
+    "num_layers": 50,
+    "autoscale": true,
+    "scale": 1.0
+   },
+   "valid_acc": 0.7217020705392798,
+   "seconds": 14.75085078400025
+  }
+ ],
+ "best": {
+  "trial": 2,
+  "config": {
+   "correct_alpha": 0.9,
+   "smooth_alpha": 0.6,
+   "num_layers": 50,
+   "autoscale": true,
+   "scale": 1.0
+  },
+  "valid_acc": 0.7299573811201718,
+  "seconds": 15.172285403000387
+ }
+}

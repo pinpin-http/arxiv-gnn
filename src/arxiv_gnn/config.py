@@ -30,9 +30,9 @@ NUM_THREADS = int(os.environ.get("ARXIV_GNN_THREADS", "2"))
 NEURAL_MODELS = ("mlp", "gcn", "sage", "gat")
 PROPAGATION_MODELS = ("lp", "cs")
 ALL_MODELS = NEURAL_MODELS + PROPAGATION_MODELS
-# Méthodes entraînées et rapportées. GAT est implémenté et testé, mais une
-# époque plein graphe prend environ 30 s sur 2 threads : il n'est que chronométré.
-RESULT_MODELS = ("mlp", "lp", "gcn", "sage", "cs")
+# Méthodes entraînées et rapportées. Une époque de GAT prend environ 16 s sur
+# 2 threads CPU : il est entraîné sur GPU (`--device cuda`), les autres sur CPU.
+RESULT_MODELS = ("mlp", "lp", "gcn", "sage", "gat", "cs")
 BENCH_MODELS = ("mlp", "gcn", "sage", "gat", "lp", "cs")
 
 MODEL_LABELS = {

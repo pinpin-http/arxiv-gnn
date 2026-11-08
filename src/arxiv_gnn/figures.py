@@ -21,8 +21,8 @@ from .train import embed_path, load_final
 # Palette catégorielle de référence (ordre fixe, validée pour le daltonisme).
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"]
 SURFACE, INK, INK2, GRID, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df", "#b9b8b2"
-CURVE_MODELS = ("mlp", "gcn", "sage")
-MODEL_COLOR = {"mlp": SERIES[0], "gcn": SERIES[1], "sage": SERIES[2]}
+CURVE_MODELS = ("mlp", "gcn", "sage", "gat")
+MODEL_COLOR = {"mlp": SERIES[0], "gcn": SERIES[1], "sage": SERIES[2], "gat": SERIES[3]}
 
 
 def _style() -> None:
@@ -67,7 +67,7 @@ def fig_accuracy():
                     mec=SURFACE, mew=1.2, label="test" if i == 0 else None, zorder=4)
         ref = LEADERBOARD.get(m)
         if ref:
-            ax.plot(100 * ref["test"][0], i - 0.14, marker="D", ms=7, mfc="none", mec=INK, mew=1.3, zorder=5,
+            ax.plot(100 * ref["test"][0], i - 0.14, marker="D", ls="none", ms=7, mfc="none", mec=INK, mew=1.3, zorder=5,
                     label="classement OGB (test)" if m == "mlp" or i == 0 else None)
         ax.annotate(f"test {fr(tm, 2)} ± {fr(ts, 2)}", (max(tm, vm) + 1.2, i), va="center", fontsize=9, color=INK2)
     ax.set_yticks(y, [C.MODEL_LABELS[m] for m, _ in rows])
@@ -89,6 +89,7 @@ def fig_learning_curves():
     if not finals:
         return None
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 3.8))
+    ends = []
     for m, f in finals.items():
         color = MODEL_COLOR[m]
         loss = np.array([r["history"]["loss"] for r in f["runs"]])
@@ -101,9 +102,20 @@ def fig_learning_curves():
         ax2.plot(ev, val.mean(0), color=color, lw=2, label=f"{C.MODEL_LABELS[m]} (validation)")
         ax2.fill_between(ev, val.min(0), val.max(0), color=color, alpha=0.12, lw=0)
         ax2.plot(ev, tr.mean(0), color=color, lw=1.2, ls=(0, (1, 2)), label=f"{C.MODEL_LABELS[m]} (entraînement)")
-        ax2.annotate(fr(val.mean(0)[-1]), (ev[-1], val.mean(0)[-1]), xytext=(4, 0), textcoords="offset points",
-                     va="center", fontsize=8.5, color=INK2)
+        ends.append((val.mean(0)[-1], color, ev[-1]))
+    # Valeur finale de la validation au bout de chaque courbe, écartée des voisines si besoin.
+    ends.sort()
+    placed = []
+    for v, color, x in ends:
+        y = v if not placed else max(v, placed[-1] + 1.8)
+        placed.append(y)
+        ax2.annotate(fr(v), (x, v), xytext=(x + 6, y), textcoords="data", va="center", fontsize=8.5, color=color,
+                     annotation_clip=False)
     ax1.set_yscale("log")
+    shown = (0.6, 0.8, 1.0, 1.5, 2.0, 3.0, 4.0)
+    tick = matplotlib.ticker.FuncFormatter(lambda v, _: fr(v, 1) if any(abs(v - t) < 1e-6 for t in shown) else "")
+    ax1.yaxis.set_major_formatter(tick)
+    ax1.yaxis.set_minor_formatter(tick)
     ax1.set_xlabel("époque")
     ax1.set_ylabel("perte d'entraînement (échelle log)")
     ax1.set_title("Perte (moyenne, enveloppe min-max des graines)", loc="left")
@@ -112,7 +124,6 @@ def fig_learning_curves():
     ax2.set_ylabel("accuracy (%)")
     ax2.set_ylim(40, 85)
     ax2.set_title("Accuracy : validation (trait plein), entraînement (pointillé)", loc="left")
-    ax2.legend(fontsize=7.5, ncol=1, loc="lower right")
     fig.tight_layout()
     return _save(fig, "learning_curves.png")
 
@@ -126,14 +137,20 @@ def fig_cpu_cost():
         return None
     order = [m for m in ("mlp", "gcn", "sage", "gat") if any(r["model"] == m for r in rows)]
     rows = [next(r for r in rows if r["model"] == m) for m in order]
-    trained = set(C.RESULT_MODELS)
-    labels = [C.MODEL_LABELS.get(r["model"], r["model"]) + ("" if r["model"] in trained else "\n(non entraîné)")
-              for r in rows]
+    finals = {r["model"]: load_final(r["model"]) for r in rows}
+    trained = {m for m, f in finals.items() if f}
+    on_gpu = {m for m, f in finals.items() if f and any(run.get("device") == "cuda" for run in f["runs"])}
+
+    def label(m: str) -> str:
+        name = C.MODEL_LABELS.get(m, m)
+        return name + ("\n(entraîné sur GPU)" if m in on_gpu else "" if m in trained else "\n(non entraîné)")
+
+    labels = [label(r["model"]) for r in rows]
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 0.7 * len(rows) + 1.6), sharey=True)
     y = np.arange(len(rows))
-    for ax, key, unit, fmt in ((ax1, "epoch_s", "s", lambda v: f"{fr(v)} s"),
-                               (ax2, "peak_rss_mb", "Mo", lambda v: f"{fr(v / 1024, 2)} Go")):
-        vals = [r[key] for r in rows]
+    for ax, key, scale, fmt in ((ax1, "epoch_s", 1, lambda v: f"{fr(v)} s"),
+                                (ax2, "peak_rss_mb", 1 / 1024, lambda v: f"{fr(v, 2)} Go")):
+        vals = [r[key] * scale for r in rows]
         colors = [SERIES[0] if r["model"] in trained else MUTED for r in rows]
         ax.barh(y, vals, height=0.5, color=colors, edgecolor=SURFACE, linewidth=2)
         for i, v in enumerate(vals):
@@ -144,7 +161,8 @@ def fig_cpu_cost():
     ax1.invert_yaxis()
     ax1.set_xlabel("secondes par époque (médiane)")
     ax2.set_xlabel("mémoire vive maximale du processus (Go)")
-    ax2.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: fr(v / 1024, 1)))
+    for ax in (ax1, ax2):
+        ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: fr(v, 1)))
     ax1.set_title(f"Une époque plein graphe sur CPU, {bench['threads']} threads", loc="left")
     ax2.set_title("RAM maximale (données + modèle + gradients)", loc="left")
     fig.tight_layout()

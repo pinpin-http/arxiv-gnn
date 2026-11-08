@@ -5,11 +5,13 @@ export ARXIV_GNN_THREADS ?= 2
 export MPLBACKEND = Agg
 export OUTDATED_IGNORE = 1
 
-# Extra uv : cpu (défaut, celui des résultats publiés et de la CI) ou cu128.
+# Extra uv : cpu (défaut, celui de la CI), cu128 (NVIDIA) ou rocm (AMD, ROCm 7.2).
 TORCH ?= cpu
 RUN = uv run --extra $(TORCH) python -m arxiv_gnn
 MODEL ?= sage
 DEVICE ?= cpu
+# auto : précision mixte float16 sur GPU, float32 sur CPU ; fp32 ou fp16 pour forcer.
+PRECISION ?= auto
 # Ordre imposé : C&S part des prédictions du MLP.
 MODELS = lp mlp cs gcn sage
 
@@ -22,13 +24,13 @@ data:
 	$(RUN) data
 
 search:
-	$(RUN) search --model $(MODEL) --device $(DEVICE)
+	$(RUN) search --model $(MODEL) --device $(DEVICE) --precision $(PRECISION)
 
 train:
-	$(RUN) train --model $(MODEL) --device $(DEVICE)
+	$(RUN) train --model $(MODEL) --device $(DEVICE) --precision $(PRECISION)
 
 experiments:
-	for m in $(MODELS); do $(RUN) train --model $$m --device $(DEVICE) || exit 1; done
+	for m in $(MODELS); do $(RUN) train --model $$m --device $(DEVICE) --precision $(PRECISION) || exit 1; done
 
 bench:
 	$(RUN) bench

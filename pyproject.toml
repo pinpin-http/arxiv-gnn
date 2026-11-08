@@ -17,15 +17,19 @@ dependencies = [
 [project.optional-dependencies]
 cpu = ["torch==2.11.0"]
 cu128 = ["torch==2.11.0"]
+# triton-rocm (dépendance de torch+rocm) n'existe que sur l'index rocm : on le déclare pour lui donner cette source.
+rocm = ["torch==2.11.0", "triton-rocm==3.6.0; sys_platform == 'linux'"]
 
 [tool.uv]
-conflicts = [[{ extra = "cpu" }, { extra = "cu128" }]]
+conflicts = [[{ extra = "cpu" }, { extra = "cu128" }, { extra = "rocm" }]]
 
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", extra = "cpu" },
     { index = "pytorch-cu128", extra = "cu128" },
+    { index = "pytorch-rocm", extra = "rocm" },
 ]
+triton-rocm = [{ index = "pytorch-rocm", extra = "rocm" }]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
@@ -35,6 +39,11 @@ explicit = true
 [[tool.uv.index]]
 name = "pytorch-cu128"
 url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm7.2"
 explicit = true
 
 [build-system]

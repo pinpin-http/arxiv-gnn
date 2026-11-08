@@ -103,6 +103,8 @@ class RunResult:
     epoch_s: float  # médiane du temps d'une étape d'entraînement (une époque)
     max_memory_mb: float | None  # VRAM maximale si GPU
     throttled: int = 0  # épisodes de ralentissement thermique pendant le run
+    device: str = "cpu"
+    precision: str = "fp32"  # fp16 : précision mixte (torch.amp)
     history: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -127,7 +129,8 @@ def run_training(
     Renvoie (RunResult, état du meilleur modèle).
     """
     device = data.x.device
-    amp = (device.type == "cuda") if amp is None else amp
+    # Par défaut, la précision suit celle des données préparées par `prepare`.
+    amp = (data.x.dtype == torch.float16) if amp is None else amp
     if not amp and data.x.dtype != torch.float32:
         raise ValueError("données en float16 alors que la précision mixte est désactivée")
     set_seed(seed)
@@ -177,6 +180,8 @@ def run_training(
         epoch_s=float(np.median(step_times)),
         max_memory_mb=max_mem,
         throttled=len(throttle_events(wall_start, time.time())),
+        device=device.type,
+        precision="fp16" if amp else "fp32",
         history=history,
     )
     return result, best_state

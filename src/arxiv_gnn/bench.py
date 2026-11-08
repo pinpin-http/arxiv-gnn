@@ -5,7 +5,9 @@ avant sur les 169 343 nœuds, perte sur les nœuds d'entraînement,
 rétropropagation, pas d'Adam). Chaque mesure tourne dans un sous-processus
 neuf, pour que la mémoire maximale (RSS) d'un modèle ne dépende pas des
 mesures précédentes. Une mesure qui chevauche un ralentissement thermique
-signalé par la sonde de la machine est refaite (voir thermal.py).
+signalé par la sonde de la machine est refaite (voir thermal.py). La charge
+moyenne du système est notée avant et après chaque mesure, parce que la
+machine peut être partagée avec d'autres tâches.
 """
 
 from __future__ import annotations
@@ -28,6 +30,24 @@ MAX_ATTEMPTS = 4
 
 def bench_path():
     return C.RESULTS_DIR / "bench.json"
+
+
+def _cpu_name() -> str | None:
+    try:
+        with open("/proc/cpuinfo") as f:
+            for line in f:
+                if line.startswith("model name"):
+                    return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return None
+
+
+def _loadavg() -> list[float] | None:
+    try:
+        return [round(x, 2) for x in os.getloadavg()]
+    except (AttributeError, OSError):
+        return None
 
 
 def _peak_rss_mb() -> float:
@@ -99,13 +119,16 @@ def run_bench(models=C.BENCH_MODELS, log=print) -> list[dict]:
     env = {**os.environ, "OMP_NUM_THREADS": str(C.NUM_THREADS), "MKL_NUM_THREADS": str(C.NUM_THREADS),
            "CUDA_VISIBLE_DEVICES": ""}
     rows = []
+    started = time.strftime("%Y-%m-%d %H:%M:%S")
     for name in models:
         warmup, epochs = (1, 3) if name == "gat" else (1, 5)
         cmd = [sys.executable, "-m", "arxiv_gnn", "_bench_one", "--model", name,
                "--warmup", str(warmup), "--epochs", str(epochs)]
         for attempt in range(1, MAX_ATTEMPTS + 1):
+            load_before = _loadavg()
             row, events = _measure(cmd, env, log)
             row["attempt"] = attempt
+            row["loadavg_before"], row["loadavg_after"] = load_before, _loadavg()
             if not events:
                 break
             row["throttle_events"] = events
@@ -116,7 +139,8 @@ def run_bench(models=C.BENCH_MODELS, log=print) -> list[dict]:
         log(f"[bench] {name:5s} {row['status']:5s} "
             f"{'' if t is None else f'{t:7.2f} s'} RSS max {row.get('peak_rss_mb', 0):.0f} Mo")
     out = {"device": "cpu", "threads": C.NUM_THREADS, "torch": torch.__version__,
-           "cpu_quota": os.environ.get("ARXIV_GNN_CPU_QUOTA"), "rows": rows}
+           "cpu_quota": os.environ.get("ARXIV_GNN_CPU_QUOTA"), "cpu": _cpu_name(), "logical_cpus": os.cpu_count(),
+           "started": started, "finished": time.strftime("%Y-%m-%d %H:%M:%S"), "rows": rows}
     bench_path().parent.mkdir(parents=True, exist_ok=True)
     bench_path().write_text(json.dumps(out, indent=1, ensure_ascii=False))
     return rows

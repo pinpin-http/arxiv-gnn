@@ -1,5 +1,6 @@
 # Environnement
 .venv/
+.venv-rocm/
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -13,3 +14,4 @@ checkpoints/
 
 # Journaux locaux
 *.log
+logs/
